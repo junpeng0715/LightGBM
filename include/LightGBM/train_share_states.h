@@ -61,7 +61,7 @@ class MultiValBinWrapper {
       ResizeHistBuf(hist_buf, cur_multi_val_bin, origin_hist_data);
       OMP_INIT_EX();
       #pragma omp parallel for schedule(static) num_threads(num_threads_)
-      for (int block_id = 0; block_id < n_data_block_; ++block_id) {
+      for (data_size_t block_id = 0; block_id < n_data_block_; ++block_id) {
         OMP_LOOP_EX_BEGIN();
         data_size_t start = block_id * data_block_size_;
         data_size_t end = std::min<data_size_t>(start + data_block_size_, num_data);
@@ -158,10 +158,10 @@ class MultiValBinWrapper {
   int num_threads_;
   int num_bin_;
   int num_bin_aligned_;
-  int n_data_block_;
-  int data_block_size_;
-  int min_block_size_;
-  int num_data_;
+  data_size_t n_data_block_;
+  data_size_t data_block_size_;
+  data_size_t min_block_size_;
+  data_size_t num_data_;
 
   hist_t* origin_hist_data_;
 

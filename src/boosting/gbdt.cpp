@@ -308,7 +308,7 @@ void GBDT::RefitTree(const std::vector<std::vector<int>>& tree_leaf_prediction) 
     for (int tree_id = 0; tree_id < num_tree_per_iteration_; ++tree_id) {
       int model_index = iter * num_tree_per_iteration_ + tree_id;
       #pragma omp parallel for schedule(static)
-      for (int i = 0; i < num_data_; ++i) {
+      for (int64_t i = 0; i < num_data_; ++i) {
         leaf_pred[i] = tree_leaf_prediction[i][model_index];
         CHECK_LT(leaf_pred[i], models_[model_index]->num_leaves());
       }
@@ -392,7 +392,7 @@ bool GBDT::TrainOneIter(const score_t* gradients, const score_t* hessians) {
       auto hess = hessians + offset;
       // need to copy gradients for bagging subset.
       if (is_use_subset_ && bag_data_cnt_ < num_data_ && config_->device_type != std::string("cuda_exp")) {
-        for (int i = 0; i < bag_data_cnt_; ++i) {
+        for (int64_t i = 0; i < bag_data_cnt_; ++i) {
           gradients_[offset + i] = grad[bag_data_indices_[i]];
           hessians_[offset + i] = hess[bag_data_indices_[i]];
         }

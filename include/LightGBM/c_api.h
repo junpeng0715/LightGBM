@@ -77,7 +77,7 @@ LIGHTGBM_C_EXPORT int LGBM_RegisterLogCallback(void (*callback)(const char*));
  * \param[out] out Number of samples. This value is used to pre-allocate memory to hold sample indices when calling ``LGBM_SampleIndices``
  * \return 0 when succeed, -1 when failure happens
  */
-LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(int32_t num_total_row,
+LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(int64_t num_total_row,
                                           const char* parameters,
                                           int* out);
 
@@ -91,10 +91,10 @@ LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(int32_t num_total_row,
  * \param[out] out_len Number of indices
  * \return 0 when succeed, -1 when failure happens
  */
-LIGHTGBM_C_EXPORT int LGBM_SampleIndices(int32_t num_total_row,
+LIGHTGBM_C_EXPORT int LGBM_SampleIndices(int64_t num_total_row,
                                          const char* parameters,
                                          void* out,
-                                         int32_t* out_len);
+                                         int64_t* out_len);
 
 /* --- start Dataset interface */
 
@@ -127,9 +127,9 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromFile(const char* filename,
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromSampledColumn(double** sample_data,
                                                           int** sample_indices,
                                                           int32_t ncol,
-                                                          const int* num_per_col,
-                                                          int32_t num_sample_row,
-                                                          int32_t num_local_row,
+                                                          const int64_t* num_per_col,
+                                                          int64_t num_sample_row,
+                                                          int64_t num_local_row,
                                                           int64_t num_dist_row,
                                                           const char* parameters,
                                                           DatasetHandle* out);
@@ -158,9 +158,9 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateByReference(const DatasetHandle referenc
 LIGHTGBM_C_EXPORT int LGBM_DatasetPushRows(DatasetHandle dataset,
                                            const void* data,
                                            int data_type,
-                                           int32_t nrow,
+                                           int64_t nrow,
                                            int32_t ncol,
-                                           int32_t start_row);
+                                           int64_t start_row);
 
 /*!
  * \brief Push data to existing dataset, if ``nrow + start_row == num_total_row``, will call ``dataset->FinishLoad``.
@@ -179,7 +179,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetPushRows(DatasetHandle dataset,
 LIGHTGBM_C_EXPORT int LGBM_DatasetPushRowsByCSR(DatasetHandle dataset,
                                                 const void* indptr,
                                                 int indptr_type,
-                                                const int32_t* indices,
+                                                const void* indices,
                                                 const void* data,
                                                 int data_type,
                                                 int64_t nindptr,
@@ -204,7 +204,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetPushRowsByCSR(DatasetHandle dataset,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromCSR(const void* indptr,
                                                 int indptr_type,
-                                                const int32_t* indices,
+                                                const void* indices,
                                                 const void* data,
                                                 int data_type,
                                                 int64_t nindptr,
@@ -249,7 +249,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromCSRFunc(void* get_row_funptr,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromCSC(const void* col_ptr,
                                                 int col_ptr_type,
-                                                const int32_t* indices,
+                                                const void* indices,
                                                 const void* data,
                                                 int data_type,
                                                 int64_t ncol_ptr,
@@ -273,7 +273,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromCSC(const void* col_ptr,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMat(const void* data,
                                                 int data_type,
-                                                int32_t nrow,
+                                                int64_t nrow,
                                                 int32_t ncol,
                                                 int is_row_major,
                                                 const char* parameters,
@@ -296,7 +296,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMat(const void* data,
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMats(int32_t nmat,
                                                  const void** data,
                                                  int data_type,
-                                                 int32_t* nrow,
+                                                 int64_t* nrow,
                                                  int32_t ncol,
                                                  int is_row_major,
                                                  const char* parameters,
@@ -313,8 +313,8 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMats(int32_t nmat,
  * \return 0 when succeed, -1 when failure happens
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetSubset(const DatasetHandle handle,
-                                            const int32_t* used_row_indices,
-                                            int32_t num_used_row_indices,
+                                            const int64_t* used_row_indices,
+                                            int64_t num_used_row_indices,
                                             const char* parameters,
                                             DatasetHandle* out);
 
@@ -389,7 +389,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetDumpText(DatasetHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_DatasetSetField(DatasetHandle handle,
                                            const char* field_name,
                                            const void* field_data,
-                                           int num_element,
+                                           int64_t num_element,
                                            int type);
 
 /*!
@@ -403,7 +403,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetSetField(DatasetHandle handle,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetField(DatasetHandle handle,
                                            const char* field_name,
-                                           int* out_len,
+                                           int64_t* out_len,
                                            const void** out_ptr,
                                            int* out_type);
 
@@ -423,7 +423,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetUpdateParamChecking(const char* old_parameters
  * \return 0 when succeed, -1 when failure happens
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetNumData(DatasetHandle handle,
-                                             int* out);
+                                             int64_t* out);
 
 /*!
  * \brief Get number of features.
@@ -579,7 +579,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterUpdateOneIter(BoosterHandle handle,
  */
 LIGHTGBM_C_EXPORT int LGBM_BoosterRefit(BoosterHandle handle,
                                         const int32_t* leaf_preds,
-                                        int32_t nrow,
+                                        int64_t nrow,
                                         int32_t ncol);
 
 /*!
@@ -828,7 +828,7 @@ LIGHTGBM_C_EXPORT int LGBM_FastConfigFree(FastConfigHandle fastConfig);
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSR(BoosterHandle handle,
                                                 const void* indptr,
                                                 int indptr_type,
-                                                const int32_t* indices,
+                                                const void* indices,
                                                 const void* data,
                                                 int data_type,
                                                 int64_t nindptr,
@@ -872,7 +872,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSR(BoosterHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictSparseOutput(BoosterHandle handle,
                                                       const void* indptr,
                                                       int indptr_type,
-                                                      const int32_t* indices,
+                                                      const void* indices,
                                                       const void* data,
                                                       int data_type,
                                                       int64_t nindptr,
@@ -897,7 +897,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictSparseOutput(BoosterHandle handle,
  * \param data_type Type of ``data`` pointer, can be ``C_API_DTYPE_FLOAT32`` or ``C_API_DTYPE_FLOAT64``
  * \return 0 when succeed, -1 when failure happens
  */
-LIGHTGBM_C_EXPORT int LGBM_BoosterFreePredictSparse(void* indptr, int32_t* indices, void* data, int indptr_type, int data_type);
+LIGHTGBM_C_EXPORT int LGBM_BoosterFreePredictSparse(void* indptr, void* indices, void* data, int indptr_type, int data_type);
 
 /*!
  * \brief Make prediction for a new dataset in CSR format. This method re-uses the internal predictor structure
@@ -931,7 +931,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterFreePredictSparse(void* indptr, int32_t* indic
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSRSingleRow(BoosterHandle handle,
                                                          const void* indptr,
                                                          int indptr_type,
-                                                         const int32_t* indices,
+                                                         const void* indices,
                                                          const void* data,
                                                          int data_type,
                                                          int64_t nindptr,
@@ -1006,7 +1006,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSRSingleRowFastInit(BoosterHandle h
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSRSingleRowFast(FastConfigHandle fastConfig_handle,
                                                              const void* indptr,
                                                              const int indptr_type,
-                                                             const int32_t* indices,
+                                                             const void* indices,
                                                              const void* data,
                                                              const int64_t nindptr,
                                                              const int64_t nelem,
@@ -1044,7 +1044,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSRSingleRowFast(FastConfigHandle fa
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSC(BoosterHandle handle,
                                                 const void* col_ptr,
                                                 int col_ptr_type,
-                                                const int32_t* indices,
+                                                const void* indices,
                                                 const void* data,
                                                 int data_type,
                                                 int64_t ncol_ptr,
@@ -1085,7 +1085,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSC(BoosterHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMat(BoosterHandle handle,
                                                 const void* data,
                                                 int data_type,
-                                                int32_t nrow,
+                                                int64_t nrow,
                                                 int32_t ncol,
                                                 int is_row_major,
                                                 int predict_type,
@@ -1123,7 +1123,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMat(BoosterHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMatSingleRow(BoosterHandle handle,
                                                          const void* data,
                                                          int data_type,
-                                                         int ncol,
+                                                         int32_t ncol,
                                                          int is_row_major,
                                                          int predict_type,
                                                          int start_iteration,
@@ -1212,7 +1212,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMatSingleRowFast(FastConfigHandle fa
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMats(BoosterHandle handle,
                                                  const void** data,
                                                  int data_type,
-                                                 int32_t nrow,
+                                                 int64_t nrow,
                                                  int32_t ncol,
                                                  int predict_type,
                                                  int start_iteration,
