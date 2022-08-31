@@ -50,6 +50,12 @@ class TreeLearner {
   */
   virtual void ResetConfig(const Config* config) = 0;
 
+  /*!
+  * \brief Reset boosting_on_gpu_
+  * \param boosting_on_gpu flag for boosting on GPU
+  */
+  virtual void ResetBoostingOnGPU(const bool /*boosting_on_gpu*/) {}
+
   virtual void SetForcedSplit(const Json* forced_split_json) = 0;
 
   /*!
@@ -103,7 +109,8 @@ class TreeLearner {
   */
   static TreeLearner* CreateTreeLearner(const std::string& learner_type,
                                         const std::string& device_type,
-                                        const Config* config);
+                                        const Config* config,
+                                        const bool boosting_on_cuda);
 };
 
 }  // namespace LightGBM

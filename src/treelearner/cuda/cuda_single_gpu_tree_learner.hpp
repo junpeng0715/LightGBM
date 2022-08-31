@@ -24,7 +24,7 @@ namespace LightGBM {
 
 class CUDASingleGPUTreeLearner: public SerialTreeLearner {
  public:
-  explicit CUDASingleGPUTreeLearner(const Config* config);
+  explicit CUDASingleGPUTreeLearner(const Config* config, const bool boosting_on_cuda);
 
   ~CUDASingleGPUTreeLearner();
 
@@ -48,6 +48,8 @@ class CUDASingleGPUTreeLearner: public SerialTreeLearner {
 
   Tree* FitByExistingTree(const Tree* old_tree, const std::vector<int>& leaf_pred,
                           const score_t* gradients, const score_t* hessians) const override;
+
+  void ResetBoostingOnGPU(const bool boosting_on_gpu) override;
 
  protected:
   void BeforeTrain() override;
@@ -118,6 +120,15 @@ class CUDASingleGPUTreeLearner: public SerialTreeLearner {
   score_t* cuda_gradients_;
   /*! \brief hessians on CUDA */
   score_t* cuda_hessians_;
+  /*! \brief whether boosting is done on CUDA */
+  bool boosting_on_cuda_;
+
+  #ifdef DEBUG
+  /*! \brief gradients on CPU */
+  std::vector<score_t> host_gradients_;
+  /*! \brief hessians on CPU */
+  std::vector<score_t> host_hessians_;
+  #endif  // DEBUG
 };
 
 }  // namespace LightGBM
@@ -131,7 +142,7 @@ namespace LightGBM {
 class CUDASingleGPUTreeLearner: public SerialTreeLearner {
  public:
     #pragma warning(disable : 4702)
-    explicit CUDASingleGPUTreeLearner(const Config* tree_config) : SerialTreeLearner(tree_config) {
+    explicit CUDASingleGPUTreeLearner(const Config* tree_config, const bool /*boosting_on_cuda*/) : SerialTreeLearner(tree_config) {
       Log::Fatal("CUDA Tree Learner experimental version was not enabled in this build.\n"
                  "Please recompile with CMake option -DUSE_CUDA_EXP=1");
     }
