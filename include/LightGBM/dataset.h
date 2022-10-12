@@ -194,7 +194,7 @@ class Metadata {
     const float* labels,
     const float* weights,
     const double* init_scores,
-    const int64_t* queries);
+    const data_size_t* queries);
 
   /*!
   * \brief Perform any extra operations after all data has been loaded
@@ -436,7 +436,7 @@ class Dataset {
     const std::vector<std::vector<double>>& forced_bins,
     int** sample_non_zero_indices,
     double** sample_values,
-    const int64_t* num_per_col,
+    const data_size_t* num_per_col,
     int num_sample_col,
     size_t total_sample_cnt,
     const Config& io_config);

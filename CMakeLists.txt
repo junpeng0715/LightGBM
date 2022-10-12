@@ -20,6 +20,7 @@ option(BUILD_CPP_TEST "Build C++ tests with Google Test" OFF)
 option(BUILD_STATIC_LIB "Build static library" OFF)
 option(__BUILD_FOR_R "Set to ON if building lib_lightgbm for use with the R package" OFF)
 option(__INTEGRATE_OPENCL "Set to ON if building LightGBM with the OpenCL ICD Loader and its dependencies included" OFF)
+option(USE_DATASET_INT64 "Enable int64 for dataset rows, when dataset rows more then MAX(int32_t)" OFF)
 
 if(APPLE)
   option(APPLE_OUTPUT_DYLIB "Output dylib shared library" OFF)
