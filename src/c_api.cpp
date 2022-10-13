@@ -1648,7 +1648,11 @@ int LGBM_DatasetGetField(DatasetHandle handle,
     *out_type = C_API_DTYPE_FLOAT32;
     is_success = true;
   } else if (dataset->GetIntField(field_name, out_len, reinterpret_cast<const data_size_t**>(out_ptr))) {
+#ifdef DATASET_USE_INT64
     *out_type = C_API_DTYPE_INT64;
+#else
+    *out_type = C_API_DTYPE_INT32;
+#endif
     is_success = true;
   } else if (dataset->GetDoubleField(field_name, out_len, reinterpret_cast<const double**>(out_ptr))) {
     *out_type = C_API_DTYPE_FLOAT64;
