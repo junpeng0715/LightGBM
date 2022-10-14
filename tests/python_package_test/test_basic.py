@@ -770,3 +770,80 @@ def test_feature_num_bin_with_max_bin_by_feature():
     ds = lgb.Dataset(X, params={'max_bin_by_feature': max_bin_by_feature}).construct()
     actual_num_bins = [ds.feature_num_bin(i) for i in range(X.shape[1])]
     np.testing.assert_equal(actual_num_bins, max_bin_by_feature)
+
+@pytest.mark.skipif(getenv('TASK', '') != 'int64', reason='Only run with CMAKE option(USE_DATASET_INT64).')
+def test_int64_support(tmp_path):
+    X_train, X_test, y_train, y_test = train_test_split(*load_breast_cancer(return_X_y=True),
+                                                        test_size=0.1, random_state=2)
+    feature_names = [f"Column_{i}" for i in range(X_train.shape[1])]
+    feature_names[1] = "a" * 1000  # set one name to a value longer than default buffer size
+    train_data = lgb.Dataset(X_train, label=y_train, feature_name=feature_names, use_int64=True)
+    valid_data = train_data.create_valid(X_test, label=y_test)
+
+    params = {
+        "objective": "binary",
+        "metric": "auc",
+        "min_data": 10,
+        "num_leaves": 15,
+        "verbose": -1,
+        "num_threads": 1,
+        "max_bin": 255,
+        "gpu_use_dp": True
+    }
+    bst = lgb.Booster(params, train_data, use_int64=True)
+    bst.add_valid(valid_data, "valid_1")
+
+    for i in range(20):
+        bst.update()
+        if i % 10 == 0:
+            print(bst.eval_train(), bst.eval_valid())
+
+    assert train_data.get_feature_name() == feature_names
+
+    assert bst.current_iteration() == 20
+    assert bst.num_trees() == 20
+    assert bst.num_model_per_iteration() == 1
+    if getenv('TASK', '') != 'cuda_exp':
+        assert bst.lower_bound() == pytest.approx(-2.9040190126976606)
+        assert bst.upper_bound() == pytest.approx(3.3182142872462883)
+
+    tname = tmp_path / "svm_light.dat"
+    model_file = tmp_path / "model.txt"
+
+    bst.save_model(model_file)
+    pred_from_matr = bst.predict(X_test)
+    with open(tname, "w+b") as f:
+        dump_svmlight_file(X_test, y_test, f)
+    pred_from_file = bst.predict(tname)
+    np.testing.assert_allclose(pred_from_matr, pred_from_file)
+
+    # check saved model persistence
+    bst = lgb.Booster(params, model_file=model_file, use_int64=True)
+    assert bst.feature_name() == feature_names
+    pred_from_model_file = bst.predict(X_test)
+    # we need to check the consistency of model file here, so test for exact equal
+    np.testing.assert_array_equal(pred_from_matr, pred_from_model_file)
+
+    # check early stopping is working. Make it stop very early, so the scores should be very close to zero
+    pred_parameter = {"pred_early_stop": True, "pred_early_stop_freq": 5, "pred_early_stop_margin": 1.5}
+    pred_early_stopping = bst.predict(X_test, **pred_parameter)
+    # scores likely to be different, but prediction should still be the same
+    np.testing.assert_array_equal(np.sign(pred_from_matr), np.sign(pred_early_stopping))
+
+    # test that shape is checked during prediction
+    bad_X_test = X_test[:, 1:]
+    bad_shape_error_msg = "The number of features in data*"
+    np.testing.assert_raises_regex(lgb.basic.LightGBMError, bad_shape_error_msg,
+                                   bst.predict, bad_X_test)
+    np.testing.assert_raises_regex(lgb.basic.LightGBMError, bad_shape_error_msg,
+                                   bst.predict, sparse.csr_matrix(bad_X_test))
+    np.testing.assert_raises_regex(lgb.basic.LightGBMError, bad_shape_error_msg,
+                                   bst.predict, sparse.csc_matrix(bad_X_test))
+    with open(tname, "w+b") as f:
+        dump_svmlight_file(bad_X_test, y_test, f)
+    np.testing.assert_raises_regex(lgb.basic.LightGBMError, bad_shape_error_msg,
+                                   bst.predict, tname)
+    with open(tname, "w+b") as f:
+        dump_svmlight_file(X_test, y_test, f, zero_based=False)
+    np.testing.assert_raises_regex(lgb.basic.LightGBMError, bad_shape_error_msg,
+                                   bst.predict, tname)

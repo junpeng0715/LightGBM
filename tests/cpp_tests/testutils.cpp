@@ -166,7 +166,7 @@ namespace LightGBM {
       init_scores_ptr = init_score_batch.data();
     }
 
-    const data_size_t* groups_ptr = nullptr;
+    const int64_t* groups_ptr = nullptr;
     if (groups) {
       groups_ptr = groups->data();
     }
@@ -291,7 +291,7 @@ namespace LightGBM {
                                   const float* labels_ptr,
                                   const float* weights_ptr,
                                   const std::vector<double>* init_scores,
-                                  const data_size_t* groups_ptr,
+                                  const int64_t* groups_ptr,
                                   int32_t thread_count,
                                   int32_t thread_id) {
     int32_t threadChunkSize = nrows / thread_count;
