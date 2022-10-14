@@ -43,7 +43,7 @@ namespace LightGBM {
     std::vector<float>* labels,
     std::vector<float>* weights,
     std::vector<double>* init_scores,
-    std::vector<data_size_t>* groups) {
+    std::vector<int64_t>* groups) {
     Random rand(42);
     features->reserve(nrows * ncols);
 
@@ -70,7 +70,7 @@ namespace LightGBM {
     std::vector<float>* labels,
     std::vector<float>* weights,
     std::vector<double>* init_scores,
-    std::vector<data_size_t>* groups) {
+    std::vector<int64_t>* groups) {
     Random rand(42);
     indptr->reserve(static_cast<int32_t>(nrows + 1));
     indices->reserve(static_cast<int32_t>(sparse_percent * nrows * ncols));
@@ -99,7 +99,7 @@ namespace LightGBM {
     std::vector<float>* labels,
     std::vector<float>* weights,
     std::vector<double>* init_scores,
-    std::vector<data_size_t>* groups) {
+    std::vector<int64_t>* groups) {
     Random rand(42);
     labels->reserve(nrows);
     if (weights) {
@@ -142,7 +142,7 @@ namespace LightGBM {
     const std::vector<float>* labels,
     const std::vector<float>* weights,
     const std::vector<double>* init_scores,
-    const std::vector<data_size_t>* groups) {
+    const std::vector<int64_t>* groups) {
     int result = LGBM_DatasetSetWaitForManualFinish(dataset_handle, 1);
     EXPECT_EQ(0, result) << "LGBM_DatasetSetWaitForManualFinish result code: " << result;
 
@@ -218,7 +218,7 @@ namespace LightGBM {
                                       const std::vector<float>* labels,
                                       const std::vector<float>* weights,
                                       const std::vector<double>* init_scores,
-    const std::vector<data_size_t>* groups) {
+ 				      const std::vector<int64_t>* groups) {
     int result = LGBM_DatasetSetWaitForManualFinish(dataset_handle, 1);
     EXPECT_EQ(0, result) << "LGBM_DatasetSetWaitForManualFinish result code: " << result;
 
@@ -236,7 +236,7 @@ namespace LightGBM {
       weights_ptr = weights->data();
     }
 
-    const data_size_t* groups_ptr = nullptr;
+    const int64_t* groups_ptr = nullptr;
     if (groups) {
       groups_ptr = groups->data();
     }
@@ -353,7 +353,7 @@ namespace LightGBM {
     const std::vector<float>* ref_labels,
     const std::vector<float>* ref_weights,
     const std::vector<double>* ref_init_scores,
-    const std::vector<data_size_t>* ref_groups) {
+    const std::vector<int64_t>* ref_groups) {
     const float* labels = metadata->label();
     auto nTotal = static_cast<int32_t>(ref_labels->size());
     for (auto i = 0; i < nTotal; i++) {

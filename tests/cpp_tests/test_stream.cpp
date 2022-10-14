@@ -27,7 +27,7 @@ void test_stream_dense(
   const std::vector<float>* labels,
   const std::vector<float>* weights,
   const std::vector<double>* init_scores,
-  const std::vector<data_size_t>* groups) {
+  const std::vector<int64_t>* groups) {
   Log::Info("Streaming %d rows dense data with a batch size of %d", nrows, batch_count);
   DatasetHandle dataset_handle = nullptr;
   Dataset* dataset = nullptr;
@@ -143,7 +143,7 @@ void test_stream_sparse(
   const std::vector<float>* labels,
   const std::vector<float>* weights,
   const std::vector<double>* init_scores,
-  const std::vector<data_size_t>* groups) {
+  const std::vector<int64_t>* groups) {
   Log::Info("Streaming %d rows sparse data with a batch size of %d", nrows, batch_count);
   DatasetHandle dataset_handle = nullptr;
   Dataset* dataset = nullptr;
@@ -279,7 +279,7 @@ TEST(Stream, PushDenseRowsWithMetadata) {
   std::vector<float> labels;
   std::vector<float> weights;
   std::vector<double> init_scores;
-  std::vector<data_size_t> groups;
+  std::vector<int64_t> groups;
 
   Log::Info("Creating random data");
   TestUtils::CreateRandomDenseData(nrows, ncols, nclasses, &features, &labels, &weights, &init_scores, &groups);
@@ -332,7 +332,7 @@ TEST(Stream, PushSparseRowsWithMetadata) {
   std::vector<float> labels;
   std::vector<float> weights;
   std::vector<double> init_scores;
-  std::vector<data_size_t> groups;
+  std::vector<int64_t> groups;
 
   Log::Info("Creating random data");
   float sparse_percent = .1f;
