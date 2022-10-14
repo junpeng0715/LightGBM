@@ -39,12 +39,9 @@ def _is_zero(x: float) -> bool:
 
 def _get_sample_count(total_nrow: int, params: str, use_int64: bool) -> int:
     sample_cnt = ctypes.c_int(0)
-    if use_int64:
-        total_nrow_t = ctypes.c_int64(total_nrow)
-    else:
-        total_nrow_t = ctypes.c_int32(total_nrow)
+
     _safe_call(_LIB.LGBM_GetSampleCount(
-        total_nrow_t,
+        ctypes.c_int64(total_nrow),
         c_str(params),
         ctypes.byref(sample_cnt),
     ))
@@ -1338,15 +1335,10 @@ class Dataset:
             indices = np.empty(sample_cnt, dtype=np.int32)
         ptr_data, _, _ = c_int_array(indices)
 
-        if self.use_int64:
-            total_nrow_t = ctypes.c_int64(total_nrow)
-            actual_sample_cnt = ctypes.c_int64(0)
-        else:
-            total_nrow_t = ctypes.c_int32(total_nrow)
-            actual_sample_cnt = ctypes.c_int32(0)
+        actual_sample_cnt = ctypes.c_int64(0)
 
         _safe_call(_LIB.LGBM_SampleIndices(
-            total_nrow_t,
+            ctypes.c_int64(total_nrow),
             c_str(param_str),
             ptr_data,
             ctypes.byref(actual_sample_cnt),
@@ -1432,20 +1424,14 @@ class Dataset:
 
         self.handle = ctypes.c_void_p()
         params_str = param_dict_to_str(self.get_params())
-        if self.use_int64:
-            sample_cnt_t = ctypes.c_int64(sample_cnt)
-            total_nrow_t = ctypes.c_int64(total_nrow)
-        else:
-            sample_cnt_t = ctypes.c_int32(sample_cnt)
-            total_nrow_t = ctypes.c_int32(total_nrow)
 
         _safe_call(_LIB.LGBM_DatasetCreateFromSampledColumn(
             ctypes.cast(sample_col_ptr, ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
             ctypes.cast(indices_col_ptr, ctypes.POINTER(ctypes.POINTER(ctypes.c_int32))),
             ctypes.c_int32(ncol),
             num_per_col_ptr,
-            sample_cnt_t,
-            total_nrow_t,
+            ctypes.c_int64(sample_cnt),
+            ctypes.c_int64(total_nrow),
             ctypes.c_int64(total_nrow),
             c_str(params_str),
             ctypes.byref(self.handle),
@@ -1468,19 +1454,14 @@ class Dataset:
         nrow, ncol = data.shape
         data = data.reshape(data.size)
         data_ptr, data_type, _ = c_float_array(data)
-        if self.use_int64:
-            nrow_t = ctypes.c_int64(nrow)
-            start_row_t = ctypes.c_int64(self._start_row)
-        else:
-            nrow_t = ctypes.c_int32(nrow)
-            start_row_t = ctypes.c_int32(self._start_row)
+
         _safe_call(_LIB.LGBM_DatasetPushRows(
             self.handle,
             data_ptr,
             data_type,
-            nrow_t,
+            ctypes.c_int64(nrow),
             ctypes.c_int32(ncol),
-            start_row_t,
+            ctypes.c_int64(self._start_row),
         ))
         self._start_row += nrow
         return self
@@ -1768,14 +1749,11 @@ class Dataset:
             data = np.array(mat.reshape(mat.size), dtype=np.float32)
 
         ptr_data, type_ptr_data, _ = c_float_array(data)
-        if self.use_int64:
-            nrow_t = ctypes.c_int64(mat.shape[0])
-        else:
-            nrow_t = ctypes.c_int32(mat.shape[0])
+
         _safe_call(_LIB.LGBM_DatasetCreateFromMat(
             ptr_data,
             ctypes.c_int(type_ptr_data),
-            nrow_t,
+            ctypes.c_int64(mat.shape[0]),
             ctypes.c_int32(mat.shape[1]),
             ctypes.c_int(C_API_IS_ROW_MAJOR),
             c_str(params_str),
@@ -1791,11 +1769,8 @@ class Dataset:
     ) -> "Dataset":
         """Initialize data from a list of 2-D numpy matrices."""
         ncol = mats[0].shape[1]
-        if self.use_int64:
-            nrow = np.empty((len(mats),), np.int64)
-        else:
-            nrow = np.empty((len(mats),), np.int32)
-        
+        nrow = np.empty((len(mats),), np.int64)
+
         if mats[0].dtype == np.float64:
             ptr_data = (ctypes.POINTER(ctypes.c_double) * len(mats))()
         else:
@@ -1824,16 +1799,13 @@ class Dataset:
             ptr_data[i] = chunk_ptr_data
             type_ptr_data = chunk_type_ptr_data
             holders.append(holder)
-        if self.use_int64:
-            nrow_t = nrow.ctypes.data_as(ctypes.POINTER(ctypes.c_int64))
-        else:
-            nrow_t = nrow.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))
+
         self.handle = ctypes.c_void_p()
         _safe_call(_LIB.LGBM_DatasetCreateFromMats(
             ctypes.c_int32(len(mats)),
             ctypes.cast(ptr_data, ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
             ctypes.c_int(type_ptr_data),
-            nrow_t,
+            nrow.ctypes.data_as(ctypes.POINTER(ctypes.c_int64)),
             ctypes.c_int32(ncol),
             ctypes.c_int(C_API_IS_ROW_MAJOR),
             c_str(params_str),
@@ -2176,10 +2148,8 @@ class Dataset:
         if self.handle is None:
             raise Exception(f"Cannot set {field_name} before construct dataset")
         if self.use_int64:
-            tmp_ele_t = ctypes.c_int64(0)
             field_type = FIELD_TYPE_MAPPER_INT64[field_name]
         else:
-            tmp_ele_t = ctypes.c_int32(0)
             field_type = FIELD_TYPE_MAPPER[field_name]
 
         if data is None:
@@ -2188,7 +2158,7 @@ class Dataset:
                 self.handle,
                 c_str(field_name),
                 None,
-                tmp_ele_t,
+                ctypes.c_int64(0),
                 ctypes.c_int(field_type)))
             return self
         if field_name == 'init_score':
@@ -2222,11 +2192,9 @@ class Dataset:
             raise TypeError(f"Expected np.float32/64 or np.int32, met type({data.dtype})")
         
         if self.use_int64:
-            data_len = ctypes.c_int64(len(data))
             if type_data != FIELD_TYPE_MAPPER_INT64[field_name]:
                 raise TypeError("Input type error for set_field")
         else:
-            data_len = ctypes.c_int32(len(data))
             if type_data != FIELD_TYPE_MAPPER[field_name]:
                 raise TypeError("Input type error for set_field")
 
@@ -2234,7 +2202,7 @@ class Dataset:
             self.handle,
             c_str(field_name),
             ptr_data,
-            data_len,
+            ctypes.c_int64(len(data)),
             ctypes.c_int(type_data)))
         self.version += 1
         return self
@@ -2254,10 +2222,7 @@ class Dataset:
         """
         if self.handle is None:
             raise Exception(f"Cannot get {field_name} before construct Dataset")
-        if self.use_int64:
-            tmp_out_len = ctypes.c_int64(0)
-        else:
-            tmp_out_len = ctypes.c_int32(0)
+        tmp_out_len = ctypes.c_int64(0)
         
         out_type = ctypes.c_int(0)
         ret = ctypes.POINTER(ctypes.c_void_p)()
@@ -4013,15 +3978,11 @@ class Booster:
             predictor.handle))
         leaf_preds = leaf_preds.reshape(-1)
         ptr_data, _, _ = c_int_array(leaf_preds)
-        if self.use_int64 :
-            nrow_t = ctypes.c_int64(nrow)
-        else :
-            nrow_t = ctypes.c_int32(nrow)
 
         _safe_call(_LIB.LGBM_BoosterRefit(
             new_booster.handle,
             ptr_data,
-            nrow_t,
+            ctypes.c_int64(nrow),
             ctypes.c_int32(ncol)))
         new_booster.network = self.network
         return new_booster

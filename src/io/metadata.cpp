@@ -489,7 +489,7 @@ void Metadata::SetQuery(const data_size_t* query, data_size_t len) {
   #endif  // USE_CUDA_EXP
 }
 
-void Metadata::InsertQueries(const data_size_t* queries, data_size_t start_index, data_size_t len) {
+void Metadata::InsertQueries(const int64_t* queries, data_size_t start_index, data_size_t len) {
   if (!queries) {
     Log::Fatal("Passed null queries");
   }
@@ -500,7 +500,7 @@ void Metadata::InsertQueries(const data_size_t* queries, data_size_t start_index
     Log::Fatal("Inserted query data is too large for dataset");
   }
 
-  memcpy(queries_.data() + start_index, queries, sizeof(data_size_t) * len);
+  memcpy(queries_.data() + start_index, queries, sizeof(int64_t) * len);
 
   query_load_from_file_ = false;
   // CUDA is handled after all insertions are complete
@@ -615,7 +615,7 @@ void Metadata::InsertAt(data_size_t start_index,
   const float* labels,
   const float* weights,
   const double* init_scores,
-  const data_size_t* queries) {
+  const int64_t* queries) {
   if (num_data_ < count + start_index) {
     Log::Fatal("Length of metadata is too long to append #data");
   }

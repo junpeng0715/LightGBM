@@ -83,7 +83,7 @@ LIGHTGBM_C_EXPORT int LGBM_RegisterLogCallback(void (*callback)(const char*));
  * \param[out] out Number of samples. This value is used to pre-allocate memory to hold sample indices when calling ``LGBM_SampleIndices``
  * \return 0 when succeed, -1 when failure happens
  */
-LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(data_size_t num_total_row,
+LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(int64_t num_total_row,
                                           const char* parameters,
                                           int* out);
 
@@ -97,10 +97,10 @@ LIGHTGBM_C_EXPORT int LGBM_GetSampleCount(data_size_t num_total_row,
  * \param[out] out_len Number of indices
  * \return 0 when succeed, -1 when failure happens
  */
-LIGHTGBM_C_EXPORT int LGBM_SampleIndices(data_size_t num_total_row,
+LIGHTGBM_C_EXPORT int LGBM_SampleIndices(int64_t num_total_row,
                                          const char* parameters,
                                          void* out,
-                                         data_size_t* out_len);
+                                         int64_t* out_len);
 
 /* --- start Dataset interface */
 
@@ -134,8 +134,8 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromSampledColumn(double** sample_data,
                                                           int** sample_indices,
                                                           int32_t ncol,
                                                           const data_size_t* num_per_col,
-                                                          data_size_t num_sample_row,
-                                                          data_size_t num_local_row,
+                                                          int64_t num_sample_row,
+                                                          int64_t num_local_row,
                                                           int64_t num_dist_row,
                                                           const char* parameters,
                                                           DatasetHandle* out);
@@ -181,9 +181,9 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetInitStreaming(DatasetHandle dataset,
 LIGHTGBM_C_EXPORT int LGBM_DatasetPushRows(DatasetHandle dataset,
                                            const void* data,
                                            int data_type,
-                                           data_size_t nrow,
+                                           int64_t nrow,
                                            int32_t ncol,
-                                           data_size_t start_row);
+                                           int64_t start_row);
 
 /*!
  * \brief Push data to existing dataset.
@@ -214,7 +214,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetPushRowsWithMetadata(DatasetHandle dataset,
                                                        const float* label,
                                                        const float* weight,
                                                        const double* init_score,
-                                                       const data_size_t* query,
+                                                       const int64_t* query,
                                                        int32_t tid);
 
 /*!
@@ -272,7 +272,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetPushRowsByCSRWithMetadata(DatasetHandle datase
                                                             const float* label,
                                                             const float* weight,
                                                             const double* init_score,
-                                                            const data_size_t* query,
+                                                            const int64_t* query,
                                                             int32_t tid);
 
 /*!
@@ -377,7 +377,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromCSC(const void* col_ptr,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMat(const void* data,
                                                 int data_type,
-                                                data_size_t nrow,
+                                                int64_t nrow,
                                                 int32_t ncol,
                                                 int is_row_major,
                                                 const char* parameters,
@@ -400,7 +400,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMat(const void* data,
 LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMats(int32_t nmat,
                                                  const void** data,
                                                  int data_type,
-                                                 data_size_t* nrow,
+                                                 int64_t* nrow,
                                                  int32_t ncol,
                                                  int is_row_major,
                                                  const char* parameters,
@@ -418,7 +418,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetCreateFromMats(int32_t nmat,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetSubset(const DatasetHandle handle,
                                             const data_size_t* used_row_indices,
-                                            data_size_t num_used_row_indices,
+                                            int64_t num_used_row_indices,
                                             const char* parameters,
                                             DatasetHandle* out);
 
@@ -493,7 +493,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetDumpText(DatasetHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_DatasetSetField(DatasetHandle handle,
                                            const char* field_name,
                                            const void* field_data,
-                                           data_size_t num_element,
+                                           int64_t num_element,
                                            int type);
 
 /*!
@@ -507,7 +507,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetSetField(DatasetHandle handle,
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetField(DatasetHandle handle,
                                            const char* field_name,
-                                           data_size_t* out_len,
+                                           int64_t* out_len,
                                            const void** out_ptr,
                                            int* out_type);
 
@@ -527,7 +527,7 @@ LIGHTGBM_C_EXPORT int LGBM_DatasetUpdateParamChecking(const char* old_parameters
  * \return 0 when succeed, -1 when failure happens
  */
 LIGHTGBM_C_EXPORT int LGBM_DatasetGetNumData(DatasetHandle handle,
-                                             data_size_t* out);
+                                             int64_t* out);
 
 /*!
  * \brief Get number of features.
@@ -697,7 +697,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterUpdateOneIter(BoosterHandle handle,
  */
 LIGHTGBM_C_EXPORT int LGBM_BoosterRefit(BoosterHandle handle,
                                         const int32_t* leaf_preds,
-                                        data_size_t nrow,
+                                        int64_t nrow,
                                         int32_t ncol);
 
 /*!
@@ -1203,7 +1203,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForCSC(BoosterHandle handle,
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMat(BoosterHandle handle,
                                                 const void* data,
                                                 int data_type,
-                                                data_size_t nrow,
+                                                int64_t nrow,
                                                 int32_t ncol,
                                                 int is_row_major,
                                                 int predict_type,
@@ -1330,7 +1330,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMatSingleRowFast(FastConfigHandle fa
 LIGHTGBM_C_EXPORT int LGBM_BoosterPredictForMats(BoosterHandle handle,
                                                  const void** data,
                                                  int data_type,
-                                                 data_size_t nrow,
+                                                 int64_t nrow,
                                                  int32_t ncol,
                                                  int predict_type,
                                                  int start_iteration,
