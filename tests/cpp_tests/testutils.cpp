@@ -112,7 +112,7 @@ namespace LightGBM {
       groups->reserve(nrows);
     }
 
-    data_size_t group = 0;
+    int64_t group = 0;
 
     for (int32_t row = 0; row < nrows; row++) {
       labels->push_back(rand.NextFloat());
